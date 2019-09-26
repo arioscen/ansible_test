@@ -1,0 +1,47 @@
+---
+- hosts: all
+  tasks:
+  - name: Add nginx repo (1/2)
+    yum_repository:
+      name: nginx-stable
+      description: nginx stable repo
+      file: nginx
+      baseurl: http://nginx.org/packages/centos/$releasever/$basearch/
+      enabled: yes
+      gpgcheck: yes
+      gpgkey: https://nginx.org/keys/nginx_signing.key
+  - name: Add nginx repo (2/2)
+    yum_repository:
+      name: nginx-mainline
+      description: nginx mainline repo
+      file: nginx
+      baseurl: http://nginx.org/packages/mainline/centos/$releasever/$basearch/
+      enabled: yes
+      gpgcheck: yes
+      gpgkey: https://nginx.org/keys/nginx_signing.key
+  - name: install yum-utils
+    yum: name=yum-utils update_cache=yes
+  - name: install nginx
+    yum: name=nginx update_cache=yes
+  - name: ensure nginx is at the latest version
+    yum: name=nginx state=latest
+    become: yes
+  - name: start nginx
+    service:
+      name: nginx
+      state: started
+  - name: open http firewall port
+    firewalld:
+      service: http 
+      zone: public
+      immediate: yes
+      permanent: yes
+      state: enabled
+  - name: open https firewall port
+    firewalld:
+      service: https
+      zone: public
+      immediate: yes
+      permanent: yes
+      state: enabled
+ 
